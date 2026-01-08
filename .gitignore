@@ -1,0 +1,19 @@
+# Abaikan file environment variables (yang berisi password asli)
+.env
+.venv
+venv/
+postgres/data/
+# Abaikan file database lokal (jika ada)
+*.sqlite
+*.db
+
+# Abaikan file log Airflow
+logs/
+
+# Abaikan file cache Python
+__pycache__/
+*.pyc
+
+# Abaikan folder konfigurasi IDE
+.idea/
+.vscode/

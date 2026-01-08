@@ -1,0 +1,28 @@
+version: 2
+
+sources:
+  - name: dev
+    database: db
+    schema: dev
+    tables:
+      - name: raw_weather_data
+        description: "Data cuaca mentah dari Weatherstack API"
+        columns:
+          - name: id
+            tests:
+              - unique
+              - not_null
+          - name: city
+          - name: temperature
+          - name: weather_descriptions
+          - name: time
+          - name: wind_speed
+          - name: wind_degree
+          - name: pressure
+          - name: precipitation
+          - name: humidity
+          - name: cloudcover
+          - name: air_quality
+            description: "Data JSONB berisi detail polusi (pm2.5, co, no2, dll)"
+          - name: inserted_at
+          - name: utc_offset

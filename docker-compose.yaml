@@ -1,0 +1,63 @@
+services:
+  db:
+    container_name: postgres_container
+    image: postgres:15.15
+    ports:
+      - 5000:5432
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/airflow_init.sql:/docker-entrypoint-initdb.d/airflow_init.sql
+    networks:
+      - my-network
+
+  af:
+    container_name: airflow_container
+    image: apache/airflow:3.0.0
+    ports:
+      - 8000:8080
+    env_file:
+      - .env
+    user: "${AIRFLOW_UID}:0"
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW_CONN_STRING}
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./api_request:/opt/airflow/api-request
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - 1000
+    depends_on:
+      - db
+    networks:
+      - my-network
+    command: >
+      bash -c "airflow db migrate && airflow standalone"
+
+  dbt:
+    container_name: dbt_container
+    image: ghcr.io/dbt-labs/dbt-postgres:1.9.latest
+    volumes:
+      - ./dbt/my_project:/usr/app
+      - ./dbt:/root/.dbt
+    working_dir: /usr/app
+    env_file:
+      - .env
+    environment:
+      DBT_PROFILES_DIR: "/root/.dbt"
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      - db
+    networks:
+      - my-network
+    command: run
+
+networks:
+  my-network:
+    driver: bridge
