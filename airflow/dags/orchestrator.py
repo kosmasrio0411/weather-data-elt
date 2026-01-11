@@ -36,20 +36,19 @@ with dag:
         image='ghcr.io/dbt-labs/dbt-postgres:1.9.latest',
         command='run',
         working_dir='/usr/app',
-        # PERBAIKAN UTAMA ADA DI SINI:
         mounts=[
             Mount(
-                source='/root/repos/weather-data-report/dbt/my_project',
+                source='D:/weather-data-etl/dbt/my_project',
                 target='/usr/app',
                 type='bind' 
             ), 
             Mount(
-                source='/root/repos/weather-data-report/dbt/profiles.yml',
+                source='D:/weather-data-etl/dbt/profiles.yml',
                 target='/root/.dbt/profiles.yml', 
                 type='bind'
             )
         ],
-        network_mode='weather-data-report_my-network',
+        network_mode='weather-data-etl_my-network',
         docker_url='unix://var/run/docker.sock',
         auto_remove='success'
     )
