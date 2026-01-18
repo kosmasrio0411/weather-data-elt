@@ -1,4 +1,5 @@
 import os
+import requests
 
 api_key = os.getenv('WEATHER_API_KEY')
 
@@ -19,4 +20,4 @@ def fetch_data():
 # fetch_data()
 
 def mock_fetch_data():
-    return {"request":{"type":"City","query":"Yogyakarta, Indonesia","language":"en","unit":"m"},"location":{"name":"Yogyakarta","country":"Indonesia","region":"Daerah Istimewa Yogyakarta","lat":"-7.783","lon":"110.361","timezone_id":"Asia\/Jakarta","localtime":"2026-01-06 14:08","localtime_epoch":1767708480,"utc_offset":"7.0"},"current":{"observation_time":"07:08 AM","temperature":31,"weather_code":116,"weather_icons":["https:\/\/cdn.worldweatheronline.com\/images\/wsymbols01_png_64\/wsymbol_0002_sunny_intervals.png"],"weather_descriptions":["Partly Cloudy "],"astro":{"sunrise":"05:28 AM","sunset":"06:01 PM","moonrise":"08:45 PM","moonset":"08:02 AM","moon_phase":"Waning Gibbous","moon_illumination":91},"air_quality":{"co":"1102.85","no2":"32.25","o3":"31","so2":"10.35","pm2_5":"79.35","pm10":"80.75","us-epa-index":"4","gb-defra-index":"4"},"wind_speed":16,"wind_degree":227,"wind_dir":"SW","pressure":1010,"precip":0,"humidity":53,"cloudcover":46,"feelslike":34,"uv_index":8,"visibility":10,"is_day":"yes"}}
+    return {"request":{"type":"City","query":"Yogyakarta, Indonesia","language":"en","unit":"m"},"location":{"name":"Yogyakarta","country":"Indonesia","region":"Daerah Istimewa Yogyakarta","lat":"-7.783","lon":"110.361","timezone_id":"Asia\/Jakarta","localtime":"2026-01-17 20:15","localtime_epoch":1768680900,"utc_offset":"7.0"},"current":{"observation_time":"01:15 PM","temperature":24,"weather_code":293,"weather_icons":["https:\/\/cdn.worldweatheronline.com\/images\/wsymbols01_png_64\/wsymbol_0033_cloudy_with_light_rain_night.png"],"weather_descriptions":["Patchy light rain"],"astro":{"sunrise":"05:33 AM","sunset":"06:04 PM","moonrise":"03:58 AM","moonset":"04:57 PM","moon_phase":"Waning Crescent","moon_illumination":3},"air_quality":{"co":"440.85","no2":"5.15","o3":"104","so2":"8.05","pm2_5":"22.65","pm10":"22.65","us-epa-index":"2","gb-defra-index":"2"},"wind_speed":7,"wind_degree":258,"wind_dir":"WSW","pressure":1007,"precip":1.8,"humidity":93,"cloudcover":66,"feelslike":26,"uv_index":0,"visibility":9,"is_day":"no"}}

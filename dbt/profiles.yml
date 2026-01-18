@@ -3,10 +3,18 @@ my_project:
     dev:
       dbname: db
       host: db
-      pass: db_password
+      pass: "{{ env_var('POSTGRES_PASSWORD') }}"
       port: 5432
       schema: dev
       threads: 4
       type: postgres
-      user: db_user
+      user: "{{ env_var('POSTGRES_USER') }}"
+    prod:
+      type: bigquery
+      method: service-account
+      project: "{{ env_var('GCP_PROJECT_ID') }}"
+      dataset: "{{ env_var('BQ_DATASET') }}"
+      threads: 4
+      keyfile: /root/.dbt/service-account.json
+      location: US
   target: dev

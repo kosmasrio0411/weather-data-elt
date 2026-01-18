@@ -31,26 +31,38 @@ with dag:
         python_callable=safe_main_callable
     )
 
-    task2 = DockerOperator(
-        task_id='transform_data_task',
-        image='ghcr.io/dbt-labs/dbt-postgres:1.9.latest',
-        command='run',
-        working_dir='/usr/app',
-        mounts=[
-            Mount(
-                source='D:/weather-data-etl/dbt/my_project',
-                target='/usr/app',
-                type='bind' 
-            ), 
-            Mount(
-                source='D:/weather-data-etl/dbt/profiles.yml',
-                target='/root/.dbt/profiles.yml', 
-                type='bind'
-            )
-        ],
-        network_mode='weather-data-etl_my-network',
-        docker_url='unix://var/run/docker.sock',
-        auto_remove='success'
+    def load_bq_callable():
+        from postgres_to_bq import load_data_to_bq
+        load_data_to_bq()
+
+    task2 = PythonOperator(
+        task_id='load_to_bq_task',
+        python_callable=load_bq_callable
     )
 
-    task1 >> task2
+    task3 = DockerOperator(
+        task_id='transform_data_bigquery',
+        image='ghcr.io/dbt-labs/dbt-bigquery:1.9.latest',
+        entrypoint='/bin/bash',
+        command='-c "echo DEBUG: GCP_PROJECT_ID=$GCP_PROJECT_ID && dbt run --target prod"',
+        working_dir='/usr/app',
+        mounts=[
+            Mount(source='D:/etl/weather-data-etl/dbt/my_project', target='/usr/app', type='bind'), 
+            Mount(source='D:/etl/weather-data-etl/dbt/profiles.yml', target='/root/.dbt/profiles.yml', type='bind'),
+            Mount(source='D:/etl/weather-data-etl/dbt/service-account.json', target='/root/.dbt/service-account.json', type='bind')
+        ],
+        environment={
+            'GOOGLE_APPLICATION_CREDENTIALS': '/root/.dbt/service-account.json',
+            'GCP_PROJECT_ID': os.getenv('GCP_PROJECT_ID'), 
+            'BQ_DATASET': 'weather_data',
+            'DBT_PROFILES_DIR': '/root/.dbt',
+            'DBT_SOURCE_DATABASE': os.getenv('GCP_PROJECT_ID'),
+            'DBT_SOURCE_SCHEMA': 'weather_data'
+        },
+        network_mode='weather-data-etl_my-network',
+        docker_url='unix://var/run/docker.sock',
+        auto_remove='success',
+        mount_tmp_dir=False
+    )
+
+    task1 >> task2 >> task3

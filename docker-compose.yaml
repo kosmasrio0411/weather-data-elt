@@ -10,6 +10,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      retries: 5
     volumes:
       - ./postgres/data:/var/lib/postgresql/data
       - ./postgres/airflow_init.sql:/docker-entrypoint-initdb.d/airflow_init.sql
@@ -27,14 +31,17 @@ services:
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW_CONN_STRING}
       AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+      _PIP_ADDITIONAL_REQUIREMENTS: "pandas google-cloud-bigquery psycopg2-binary db-dtypes"
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./api_request:/opt/airflow/api-request
+      - ./dbt/service-account.json:/opt/airflow/api-request/service-account.json
       - /var/run/docker.sock:/var/run/docker.sock
     group_add:
       - 1000
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - my-network
     command: >
@@ -53,10 +60,31 @@ services:
       DBT_PROFILES_DIR: "/root/.dbt"
       DB_PASSWORD: ${POSTGRES_PASSWORD}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - my-network
-    command: run
+    entrypoint: ["/bin/bash", "-c", "tail -f /dev/null"]
+
+  dbt-bq:
+    container_name: dbt_bq_container
+    image: ghcr.io/dbt-labs/dbt-bigquery:1.9.latest
+    volumes:
+      - ./dbt/my_project:/usr/app
+      - ./dbt:/root/.dbt
+    working_dir: /usr/app
+    env_file:
+      - .env
+    environment:
+      DBT_PROFILES_DIR: "/root/.dbt"
+      GOOGLE_APPLICATION_CREDENTIALS: "/root/.dbt/service-account.json"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - my-network
+    entrypoint: ["/bin/bash", "-c", "tail -f /dev/null"]
+
 
 networks:
   my-network:
